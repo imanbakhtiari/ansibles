@@ -1,0 +1,16 @@
+- hosts: backup
+  roles:
+    - role: backup
+  gather_facts: yes
+  any_errors_fatal: true
+  tags: [backup]
+
+- hosts: restore
+  roles:
+    - role: restore
+  gather_facts: yes
+  any_errors_fatal: true
+  tags: [restore]
+
+
+
