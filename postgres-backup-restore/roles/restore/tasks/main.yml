@@ -1,0 +1,13 @@
+---
+# tasks file for restore
+#
+
+- name: Extract backup file
+  command: tar -xzf "{{ backup_dir }}/{{ app_name }}/{{ date }}.tar.gz" -C "{{ backup_dir }}/{{ app_name }}"
+
+
+- name: Restore database
+  shell: pg_restore -h {{ db_host }} -U {{ db_user }} -d {{ db_name }} {{ backup_dir }}/{{ app_name }}/{{ app_name }}.sql
+  environment:
+    PGPASSWORD: "{{ db_password }}"
+          

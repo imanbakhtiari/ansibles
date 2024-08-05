@@ -1,0 +1,32 @@
+---
+# tasks file for backup
+#
+#
+
+- name: Set timestamp of the backup
+  set_fact:
+    now: "{{ lookup('pipe', 'date +%F-%H-%M-%S') }}"
+
+- name: Create a backup directory
+  file:
+    path: "{{ backup_dir }}/{{ app_name }}/{{ now }}"
+    mode: '0775'
+    owner: "{{ user_app }}"
+    state: directory
+
+- name: Backup database
+  shell: pg_dump -U {{ db_user }} -h {{ db_host }} -w -F c {{ db_name }} > {{ backup_dir }}/{{ app_name }}/{{ now }}/{{ db_name }}.sql
+  environment:
+    PGPASSWORD: "{{ db_password }}"
+
+- name: Compress backup file
+  command: tar czf {{ backup_dir }}/{{ app_name }}/{{ now }}.tar.gz -C {{ backup_dir }}/{{ app_name }}/{{ now }} .
+  args:
+    creates: "{{ backup_dir }}/{{ app_name }}/{{ now }}.tar.gz"
+
+- name: Fetch backup from the server
+  fetch:
+    src: "{{ backup_dir }}/{{ app_name }}/{{ now }}.tar.gz"
+    dest: "{{ backup_dir_local }}/{{ db_name }}-{{ now }}.tar.gz"
+    flat: yes
+
